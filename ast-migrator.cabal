@@ -48,7 +48,13 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  exposed-modules:     AstMigrator
+  exposed-modules:     Text.Pandoc.AST.V1_21
+                     , AstMigrator
+  build-depends:       aeson      >= 0.6.2 && < 1.6
+                     , containers >= 0.3
+                     , deepseq    >= 1.4.1 && < 1.5
+                     , syb        >= 0.1   && < 0.8
+                     , text
 
 executable ast-migrator
   import:              common-options
