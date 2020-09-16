@@ -1,6 +1,11 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, DeriveGeneric,
-    FlexibleContexts, GeneralizedNewtypeDeriving, PatternGuards, CPP #-}
-
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternGuards #-}
 {-
 Copyright (c) 2006-2019, John MacFarlane
 
@@ -88,7 +93,6 @@ import Control.DeepSeq (NFData)
 import Data.Aeson hiding (Null)
 import Data.Generics (Data, Typeable)
 import Data.Ord (comparing)
-import Data.Semigroup (Semigroup(..))
 import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Version (Version, makeVersion, versionBranch)
@@ -97,8 +101,12 @@ import qualified Data.Aeson.Types as Aeson
 import qualified Data.Map as M
 import qualified Data.Text as T
 
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))
+#endif
+
 data Pandoc = Pandoc Meta [Block]
-  deriving (Eq, Ord, Read, Show, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Read, Show, Typeable, Data, Generic)
 
 instance Semigroup Pandoc where
   (Pandoc m1 bs1) <> (Pandoc m2 bs2) =
@@ -109,7 +117,8 @@ instance Monoid Pandoc where
 
 -- | Metadata for the document:  title, authors, date.
 newtype Meta = Meta { unMeta :: M.Map Text MetaValue }
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Data, Generic)
+  deriving newtype (Eq, Ord, Show, Read, Typeable)
 
 instance Semigroup Meta where
   (Meta m1) <> (Meta m2) = Meta (M.union m2 m1)
@@ -126,7 +135,7 @@ data MetaValue
   | MetaString Text
   | MetaInlines [Inline]
   | MetaBlocks [Block]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 nullMeta :: Meta
 nullMeta = Meta M.empty
@@ -186,7 +195,7 @@ data ListNumberStyle
   | UpperRoman
   | LowerAlpha
   | UpperAlpha
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | Delimiter of list numbers.
 data ListNumberDelim
@@ -194,7 +203,7 @@ data ListNumberDelim
   | Period
   | OneParen
   | TwoParens
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | Attributes: identifier, classes, key-value pairs
 type Attr = (Text, [Text], [(Text, Text)])
@@ -204,7 +213,8 @@ nullAttr = ("",[],[])
 
 -- | Formats for raw blocks
 newtype Format = Format Text
-  deriving (Read, Show, Typeable, Data, Generic, ToJSON, FromJSON)
+  deriving stock (Data, Generic)
+  deriving newtype (Read, Show, Typeable, ToJSON, FromJSON)
 
 instance IsString Format where
   fromString f = Format $ T.toCaseFold $ T.pack f
@@ -218,7 +228,8 @@ instance Ord Format where
 -- | The number of columns taken up by the row head of each row of a
 -- 'TableBody'. The row body takes up the remaining columns.
 newtype RowHeadColumns = RowHeadColumns Int
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic, Num, Enum)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving newtype (Enum, Num)
 
 -- | Alignment of a table column.
 data Alignment
@@ -226,99 +237,103 @@ data Alignment
   | AlignRight
   | AlignCenter
   | AlignDefault
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | The width of a table column, as a fraction of the total table
 -- width.
 data ColWidth
   = ColWidth Double
   | ColWidthDefault
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | The specification for a single table column.
 type ColSpec = (Alignment, ColWidth)
 
 -- | A table row.
 data Row = Row Attr [Cell]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | The head of a table.
 data TableHead = TableHead Attr [Row]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | A body of a table, with an intermediate head and the specified
 -- number of row header columns.
 data TableBody = TableBody Attr RowHeadColumns [Row] [Row]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | The foot of a table.
 data TableFoot = TableFoot Attr [Row]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | A short caption, for use in, for instance, lists of figures.
 type ShortCaption = [Inline]
 
 -- | The caption of a table, with an optional short caption.
 data Caption = Caption (Maybe ShortCaption) [Block]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | A table cell.
 data Cell = Cell Attr Alignment RowSpan ColSpan [Block]
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | The number of rows occupied by a cell; the height of a cell.
 newtype RowSpan = RowSpan Int
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic, Num, Enum)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving newtype (Enum, Num)
 
 -- | The number of columns occupied by a cell; the width of a cell.
 newtype ColSpan = ColSpan Int
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic, Num, Enum)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving newtype (Enum, Num)
 
 -- | Block element.
 data Block
-    -- | Plain text, not a paragraph
-    = Plain [Inline]
-    -- | Paragraph
-    | Para [Inline]
-    -- | Multiple non-breaking lines
-    | LineBlock [[Inline]]
-    -- | Code block (literal) with attributes
-    | CodeBlock Attr Text
-    -- | Raw block
-    | RawBlock Format Text
-    -- | Block quote (list of blocks)
-    | BlockQuote [Block]
-    -- | Ordered list (attributes and a list of items, each a list of
-    -- blocks)
-    | OrderedList ListAttributes [[Block]]
-    -- | Bullet list (list of items, each a list of blocks)
-    | BulletList [[Block]]
-    -- | Definition list. Each list item is a pair consisting of a
-    -- term (a list of inlines) and one or more definitions (each a
-    -- list of blocks)
-    | DefinitionList [([Inline],[[Block]])]
-    -- | Header - level (integer) and text (inlines)
-    | Header Int Attr [Inline]
-    -- | Horizontal rule
-    | HorizontalRule
-    -- | Table, with attributes, caption, optional short caption,
-    -- column alignments and widths (required), table head, table
-    -- bodies, and table foot
-    | Table Attr Caption [ColSpec] TableHead [TableBody] TableFoot
-    -- | Generic block container with attributes
-    | Div Attr [Block]
-    -- | Nothing
-    | Null
-    deriving (Eq, Ord, Read, Show, Typeable, Data, Generic)
+  -- | Plain text, not a paragraph
+  = Plain [Inline]
+  -- | Paragraph
+  | Para [Inline]
+  -- | Multiple non-breaking lines
+  | LineBlock [[Inline]]
+  -- | Code block (literal) with attributes
+  | CodeBlock Attr Text
+  -- | Raw block
+  | RawBlock Format Text
+  -- | Block quote (list of blocks)
+  | BlockQuote [Block]
+  -- | Ordered list (attributes and a list of items, each a list of
+  -- blocks)
+  | OrderedList ListAttributes [[Block]]
+  -- | Bullet list (list of items, each a list of blocks)
+  | BulletList [[Block]]
+  -- | Definition list. Each list item is a pair consisting of a
+  -- term (a list of inlines) and one or more definitions (each a
+  -- list of blocks)
+  | DefinitionList [([Inline],[[Block]])]
+  -- | Header - level (integer) and text (inlines)
+  | Header Int Attr [Inline]
+  -- | Horizontal rule
+  | HorizontalRule
+  -- | Table, with attributes, caption, optional short caption,
+  -- column alignments and widths (required), table head, table
+  -- bodies, and table foot
+  | Table Attr Caption [ColSpec] TableHead [TableBody] TableFoot
+  -- | Generic block container with attributes
+  | Div Attr [Block]
+  -- | Nothing
+  | Null
+  deriving stock (Eq, Ord, Read, Show, Typeable, Data, Generic)
 
 -- | Type of quotation marks to use in Quoted inline.
-data QuoteType = SingleQuote | DoubleQuote deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+data QuoteType = SingleQuote | DoubleQuote
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 -- | Link target (URL, title).
 type Target = (Text, Text)
 
 -- | Type of math element (display or inline).
-data MathType = DisplayMath | InlineMath deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+data MathType = DisplayMath | InlineMath
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 -- | Inline elements.
 data Inline
@@ -342,7 +357,7 @@ data Inline
     | Image Attr [Inline] Target -- ^ Image:  alt text (list of inlines), target
     | Note [Block]          -- ^ Footnote or endnote
     | Span Attr [Inline]    -- ^ Generic inline container with attributes
-    deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+    deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 data Citation = Citation
   { citationId      :: Text
@@ -352,13 +367,13 @@ data Citation = Citation
   , citationNoteNum :: Int
   , citationHash    :: Int
   }
-  deriving (Show, Eq, Read, Typeable, Data, Generic)
+  deriving stock (Show, Eq, Read, Typeable, Data, Generic)
 
 instance Ord Citation where
   compare = comparing citationHash
 
 data CitationMode = AuthorInText | SuppressAuthor | NormalCitation
-  deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 
 -- ToJSON/FromJSON instances. We do this by hand instead of deriving

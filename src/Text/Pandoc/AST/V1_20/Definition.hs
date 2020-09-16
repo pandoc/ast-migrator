@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -81,7 +82,6 @@ import Control.DeepSeq (NFData)
 import Data.Aeson hiding (Null)
 import Data.Generics (Data, Typeable)
 import Data.Ord (comparing)
-import Data.Semigroup (Semigroup(..))
 import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Data.Version (Version, makeVersion, versionBranch)
@@ -90,8 +90,12 @@ import qualified Data.Aeson.Types as Aeson
 import qualified Data.Map as M
 import qualified Data.Text as T
 
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))
+#endif
+
 data Pandoc = Pandoc Meta [Block]
-  deriving (Eq, Ord, Read, Show, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Read, Show, Typeable, Data, Generic)
 
 instance Semigroup Pandoc where
   (Pandoc m1 bs1) <> (Pandoc m2 bs2) =
@@ -102,7 +106,7 @@ instance Monoid Pandoc where
 
 -- | Metadata for the document:  title, authors, date.
 newtype Meta = Meta { unMeta :: M.Map Text MetaValue }
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 instance Semigroup Meta where
   (Meta m1) <> (Meta m2) = Meta (M.union m2 m1)
@@ -112,13 +116,14 @@ instance Monoid Meta where
   mempty = Meta M.empty
   mappend = (<>)
 
-data MetaValue = MetaMap (M.Map Text MetaValue)
-               | MetaList [MetaValue]
-               | MetaBool Bool
-               | MetaString Text
-               | MetaInlines [Inline]
-               | MetaBlocks [Block]
-               deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+data MetaValue
+  = MetaMap (M.Map Text MetaValue)
+  | MetaList [MetaValue]
+  | MetaBool Bool
+  | MetaString Text
+  | MetaInlines [Inline]
+  | MetaBlocks [Block]
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 nullMeta :: Meta
 nullMeta = Meta M.empty
@@ -171,7 +176,7 @@ data Alignment
   | AlignRight
   | AlignCenter
   | AlignDefault
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | List attributes.  The first element of the triple is the
 -- start number of the list.
@@ -186,7 +191,7 @@ data ListNumberStyle
   | UpperRoman
   | LowerAlpha
   | UpperAlpha
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | Delimiter of list numbers.
 data ListNumberDelim
@@ -194,7 +199,7 @@ data ListNumberDelim
   | Period
   | OneParen
   | TwoParens
-  deriving (Eq, Ord, Show, Read, Typeable, Data, Generic)
+  deriving stock (Eq, Ord, Show, Read, Typeable, Data, Generic)
 
 -- | Attributes: identifier, classes, key-value pairs
 type Attr = (Text, [Text], [(Text, Text)])
@@ -207,7 +212,8 @@ type TableCell = [Block]
 
 -- | Formats for raw blocks
 newtype Format = Format Text
-               deriving (Read, Show, Typeable, Data, Generic, ToJSON, FromJSON)
+  deriving stock (Read, Show, Typeable, Data, Generic)
+  deriving newtype (FromJSON, ToJSON)
 
 instance IsString Format where
   fromString f = Format $ T.toCaseFold $ T.pack f
@@ -220,77 +226,80 @@ instance Ord Format where
 
 -- | Block element.
 data Block
-    = Plain [Inline]        -- ^ Plain text, not a paragraph
-    | Para [Inline]         -- ^ Paragraph
-    | LineBlock [[Inline]]  -- ^ Multiple non-breaking lines
-    | CodeBlock Attr Text -- ^ Code block (literal) with attributes
-    | RawBlock Format Text -- ^ Raw block
-    | BlockQuote [Block]    -- ^ Block quote (list of blocks)
-    | OrderedList ListAttributes [[Block]] -- ^ Ordered list (attributes
-                            -- and a list of items, each a list of blocks)
-    | BulletList [[Block]]  -- ^ Bullet list (list of items, each
-                            -- a list of blocks)
-    | DefinitionList [([Inline],[[Block]])]  -- ^ Definition list
-                            -- Each list item is a pair consisting of a
-                            -- term (a list of inlines) and one or more
-                            -- definitions (each a list of blocks)
-    | Header Int Attr [Inline] -- ^ Header - level (integer) and text (inlines)
-    | HorizontalRule        -- ^ Horizontal rule
-    | Table [Inline] [Alignment] [Double] [TableCell] [[TableCell]]  -- ^ Table,
-                            -- with caption, column alignments (required),
-                            -- relative column widths (0 = default),
-                            -- column headers (each a list of blocks), and
-                            -- rows (each a list of lists of blocks)
-    | Div Attr [Block]      -- ^ Generic block container with attributes
-    | Null                  -- ^ Nothing
-    deriving (Eq, Ord, Read, Show, Typeable, Data, Generic)
+  = Plain [Inline]        -- ^ Plain text, not a paragraph
+  | Para [Inline]         -- ^ Paragraph
+  | LineBlock [[Inline]]  -- ^ Multiple non-breaking lines
+  | CodeBlock Attr Text -- ^ Code block (literal) with attributes
+  | RawBlock Format Text -- ^ Raw block
+  | BlockQuote [Block]    -- ^ Block quote (list of blocks)
+  | OrderedList ListAttributes [[Block]] -- ^ Ordered list (attributes
+                          -- and a list of items, each a list of blocks)
+  | BulletList [[Block]]  -- ^ Bullet list (list of items, each
+                          -- a list of blocks)
+  | DefinitionList [([Inline],[[Block]])]  -- ^ Definition list
+                          -- Each list item is a pair consisting of a
+                          -- term (a list of inlines) and one or more
+                          -- definitions (each a list of blocks)
+  | Header Int Attr [Inline] -- ^ Header - level (integer) and text (inlines)
+  | HorizontalRule        -- ^ Horizontal rule
+  | Table [Inline] [Alignment] [Double] [TableCell] [[TableCell]]  -- ^ Table,
+                          -- with caption, column alignments (required),
+                          -- relative column widths (0 = default),
+                          -- column headers (each a list of blocks), and
+                          -- rows (each a list of lists of blocks)
+  | Div Attr [Block]      -- ^ Generic block container with attributes
+  | Null                  -- ^ Nothing
+  deriving stock (Eq, Ord, Read, Show, Typeable, Data, Generic)
 
 -- | Type of quotation marks to use in Quoted inline.
-data QuoteType = SingleQuote | DoubleQuote deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+data QuoteType = SingleQuote | DoubleQuote
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 -- | Link target (URL, title).
 type Target = (Text, Text)
 
 -- | Type of math element (display or inline).
-data MathType = DisplayMath | InlineMath deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+data MathType = DisplayMath | InlineMath
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 -- | Inline elements.
 data Inline
-    = Str Text            -- ^ Text (string)
-    | Emph [Inline]         -- ^ Emphasized text (list of inlines)
-    | Strong [Inline]       -- ^ Strongly emphasized text (list of inlines)
-    | Strikeout [Inline]    -- ^ Strikeout text (list of inlines)
-    | Superscript [Inline]  -- ^ Superscripted text (list of inlines)
-    | Subscript [Inline]    -- ^ Subscripted text (list of inlines)
-    | SmallCaps [Inline]    -- ^ Small caps text (list of inlines)
-    | Quoted QuoteType [Inline] -- ^ Quoted text (list of inlines)
-    | Cite [Citation]  [Inline] -- ^ Citation (list of inlines)
-    | Code Attr Text      -- ^ Inline code (literal)
-    | Space                 -- ^ Inter-word space
-    | SoftBreak             -- ^ Soft line break
-    | LineBreak             -- ^ Hard line break
-    | Math MathType Text  -- ^ TeX math (literal)
-    | RawInline Format Text -- ^ Raw inline
-    | Link Attr [Inline] Target  -- ^ Hyperlink: alt text (list of inlines), target
-    | Image Attr [Inline] Target -- ^ Image:  alt text (list of inlines), target
-    | Note [Block]          -- ^ Footnote or endnote
-    | Span Attr [Inline]    -- ^ Generic inline container with attributes
-    deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+  = Str Text            -- ^ Text (string)
+  | Emph [Inline]         -- ^ Emphasized text (list of inlines)
+  | Strong [Inline]       -- ^ Strongly emphasized text (list of inlines)
+  | Strikeout [Inline]    -- ^ Strikeout text (list of inlines)
+  | Superscript [Inline]  -- ^ Superscripted text (list of inlines)
+  | Subscript [Inline]    -- ^ Subscripted text (list of inlines)
+  | SmallCaps [Inline]    -- ^ Small caps text (list of inlines)
+  | Quoted QuoteType [Inline] -- ^ Quoted text (list of inlines)
+  | Cite [Citation]  [Inline] -- ^ Citation (list of inlines)
+  | Code Attr Text      -- ^ Inline code (literal)
+  | Space                 -- ^ Inter-word space
+  | SoftBreak             -- ^ Soft line break
+  | LineBreak             -- ^ Hard line break
+  | Math MathType Text  -- ^ TeX math (literal)
+  | RawInline Format Text -- ^ Raw inline
+  | Link Attr [Inline] Target  -- ^ Hyperlink: alt text (list of inlines), target
+  | Image Attr [Inline] Target -- ^ Image:  alt text (list of inlines), target
+  | Note [Block]          -- ^ Footnote or endnote
+  | Span Attr [Inline]    -- ^ Generic inline container with attributes
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
-data Citation = Citation { citationId      :: Text
-                         , citationPrefix  :: [Inline]
-                         , citationSuffix  :: [Inline]
-                         , citationMode    :: CitationMode
-                         , citationNoteNum :: Int
-                         , citationHash    :: Int
-                         }
-                deriving (Show, Eq, Read, Typeable, Data, Generic)
+data Citation = Citation
+  { citationId      :: Text
+  , citationPrefix  :: [Inline]
+  , citationSuffix  :: [Inline]
+  , citationMode    :: CitationMode
+  , citationNoteNum :: Int
+  , citationHash    :: Int
+  }
+  deriving stock (Show, Eq, Read, Typeable, Data, Generic)
 
 instance Ord Citation where
     compare = comparing citationHash
 
 data CitationMode = AuthorInText | SuppressAuthor | NormalCitation
-                    deriving (Show, Eq, Ord, Read, Typeable, Data, Generic)
+  deriving stock (Show, Eq, Ord, Read, Typeable, Data, Generic)
 
 
 -- ToJSON/FromJSON instances. We do this by hand instead of deriving
