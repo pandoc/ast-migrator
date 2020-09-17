@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -21,6 +22,10 @@ import Text.Pandoc.AST.V1_21.Definition
 import qualified Text.Pandoc.AST.V1_21.Builder as Builder
 import qualified Text.Pandoc.AST.V1_20.Definition as V1_20
 import qualified Data.Map as M
+
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))
+#endif
 
 migrateDown :: Pandoc -> V1_20.Pandoc
 migrateDown = migrateDownFromV1_21
