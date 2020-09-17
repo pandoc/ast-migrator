@@ -26,6 +26,8 @@ source-repository head
 
 common common-options
   build-depends:       base       >= 4.9   && < 5
+                     , aeson
+                     , text
   
   ghc-options:         -Wall
                        -Wcompat
@@ -56,18 +58,18 @@ library
                      , Text.Pandoc.AST.V1_21.Definition
                      , Text.Pandoc.AST.V1_21.Down
                      , AstMigrator
-  build-depends:       aeson        >= 0.6.2 && < 1.6
+  build-depends:       aeson        >= 0.6.2  && < 1.6
                      , containers   >= 0.3
-                     , deepseq      >= 1.4.1 && < 1.5
+                     , deepseq      >= 1.4.1  && < 1.5
                      , pandoc-types == 1.21.*
-                     , syb          >= 0.1   && < 0.8
-                     , text
+                     , syb          >= 0.1    && < 0.8
 
 executable ast-migrator
   import:              common-options
   hs-source-dirs:      app
   main-is:             Main.hs
   build-depends:       ast-migrator
+                     , bytestring   >= 0.10.4 && < 0.11
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
