@@ -20,10 +20,6 @@ import Text.Pandoc.AST.V1_21.Definition
 import qualified Text.Pandoc.AST.V1_22.Definition as V1_22
 import qualified Data.Map as M
 
-#if !MIN_VERSION_base(4,11,0)
-import Data.Semigroup (Semigroup(..))
-#endif
-
 migrateDown :: Pandoc -> V1_22.Pandoc
 migrateDown = migrateUpToV1_22
 

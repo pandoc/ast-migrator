@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
@@ -18,6 +19,10 @@ import Prelude hiding (interact)
 import Data.ByteString.Lazy (interact)
 import Options.Applicative
 import Text.Pandoc.AST.Migrator (ASTVersion (..), migrateJSON)
+
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))
+#endif
 
 -- | Migration parameters
 data Migration = Migration

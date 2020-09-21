@@ -7,7 +7,7 @@ Maintainer  : Albert Krewinkel <albert@zeitkraut.de>
 Stability   : alpha
 Portability : portable
 
-Migrate from or to older AST versions.
+Migrate from or to older API versions.
 -}
 module Text.Pandoc.AST.Migrator
   ( ASTVersion (..)
@@ -27,6 +27,7 @@ import Text.Pandoc.AST.V1_21.Down (migrateDownFromV1_21)
 import Text.Pandoc.AST.V1_21.Up (migrateUpToV1_22)
 import Text.Pandoc.AST.V1_22.Down (migrateDownFromV1_22)
 
+-- | Supported pandoc API versions.
 data ASTVersion
   = V1_20  -- ^ Version 1.20
   | V1_21  -- ^ Version 1.21
