@@ -61,6 +61,7 @@ library
                      , Text.Pandoc.AST.V1_22.Down
                      , AstMigrator
   build-depends:       aeson        >= 0.6.2  && < 1.6
+                     , bytestring   >= 0.10.4 && < 0.11
                      , containers   >= 0.3
                      , deepseq      >= 1.4.1  && < 1.5
                      , pandoc-types == 1.22.*
