@@ -1,28 +1,72 @@
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-|
+Module      : Main
+Copyright   : © 2020 Albert Krewinkel
+License     : MIT
+
+Maintainer  : Albert Krewinkel <albert@zeitkraut.de>
+Stability   : alpha
+Portability : portable
+
+Run pandoc JSON migrations.
+-}
 module Main (main) where
 
 import Prelude hiding (interact)
 
-import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Lazy (interact)
-import Data.List (find)
-import System.Environment (getArgs)
-import Text.Pandoc.AST.Migrator
+import Options.Applicative
+import Text.Pandoc.AST.Migrator (ASTVersion (..), migrateJSON)
+
+-- | Migration parameters
+data Migration = Migration
+  { initialVersion :: ASTVersion
+  , targetVersion  :: ASTVersion
+  }
+  deriving (Show)
+
+migration :: Parser Migration
+migration = Migration
+  <$> option astVersion
+      (mconcat
+       [ long "from"
+       , short 'f'
+       , metavar "INITIAL"
+       , help "initial pandoc AST version"
+       , value maxBound
+       , showDefaultWith versionToString
+       ])
+  <*> option astVersion
+      (mconcat
+       [ long "to"
+       , short 't'
+       , metavar "TARGET"
+       , help "migration target version"
+       , value maxBound
+       , showDefaultWith versionToString
+       ])
+  where
+    astVersion :: ReadM ASTVersion
+    astVersion = eitherReader eitherASTVersion
+
+    versionToString :: ASTVersion -> String
+    versionToString = drop 1 . map (\x -> if x == '_' then '.' else x) . show
+
+eitherASTVersion :: String -> Either String ASTVersion
+eitherASTVersion = \case
+  "1.20" -> Right V1_20
+  "1.21" -> Right V1_21
+  "1.22" -> Right V1_22
+  x      -> Left ("Unsupported version: " <> x)
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let direction = case find (== "--up") args of
-        Just _ -> Up
-        Nothing -> Down
-  interact $ case direction of
-    Up   -> encode
-          . either error migrateUpToV1_21
-          . eitherDecode
-    Down -> encode
-          . either error migrateDownFromV1_21
-          . eitherDecode
-
--- | Direction in which the migration takes place.
-data Direction
-  = Up
-  | Down
+  params <- execParser opts
+  interact $ migrateJSON (initialVersion params) (targetVersion params)
+  where
+    opts = info (migration <**> helper) $ mconcat
+           [ fullDesc
+           , progDesc "Migrate between pandoc AST versions"
+           , header "ast-migrator - a pandoc AST compatibility tool"
+           ]

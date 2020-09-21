@@ -20,19 +20,18 @@ module Text.Pandoc.AST.Migrator
   , migrateDownFromV1_22
   ) where
 
+import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
+import Data.ByteString.Lazy (ByteString)
 import Text.Pandoc.AST.V1_20.Up (migrateUpToV1_21)
 import Text.Pandoc.AST.V1_21.Down (migrateDownFromV1_21)
 import Text.Pandoc.AST.V1_21.Up (migrateUpToV1_22)
 import Text.Pandoc.AST.V1_22.Down (migrateDownFromV1_22)
 
-import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
-import Data.ByteString.Lazy (ByteString)
-
 data ASTVersion
   = V1_20  -- ^ Version 1.20
   | V1_21  -- ^ Version 1.21
   | V1_22  -- ^ Version 1.22
-  deriving (Eq, Ord, Show)
+  deriving (Bounded, Enum, Eq, Ord, Read, Show)
 
 migrateJSON :: ASTVersion -- ^ initial version
             -> ASTVersion -- ^ target version
