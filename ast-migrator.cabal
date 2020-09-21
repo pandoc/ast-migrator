@@ -57,6 +57,7 @@ library
                      , Text.Pandoc.AST.V1_21.Builder
                      , Text.Pandoc.AST.V1_21.Definition
                      , Text.Pandoc.AST.V1_21.Down
+                     , Text.Pandoc.AST.V1_21.Up
                      , Text.Pandoc.AST.V1_22
                      , Text.Pandoc.AST.V1_22.Definition
                      , Text.Pandoc.AST.V1_22.Down
