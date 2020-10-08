@@ -59,7 +59,6 @@ library
                      , Text.Pandoc.AST.V1_22
                      , Text.Pandoc.AST.V1_22.Definition
                      , Text.Pandoc.AST.V1_22.Down
-                     , AstMigrator
   build-depends:       aeson        >= 0.6.2  && < 1.6
                      , bytestring   >= 0.10.4 && < 0.11
                      , containers   >= 0.3
