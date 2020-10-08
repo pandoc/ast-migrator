@@ -3,8 +3,8 @@ name:                ast-migrator
 version:             0.0.0.0
 synopsis:            Migrate documents from one pandoc AST schema to another
 description:         Migrate documents from one pandoc AST schema to another
-homepage:            https://github.com/tarleb/ast-migrator
-bug-reports:         https://github.com/tarleb/ast-migrator/issues
+homepage:            https://github.com/pandoc/ast-migrator
+bug-reports:         https://github.com/pandoc/ast-migrator/issues
 license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Albert Krewinkel
@@ -22,7 +22,7 @@ tested-with:         GHC == 8.2.2
 
 source-repository head
   type:                git
-  location:            https://github.com/tarleb/ast-migrator.git
+  location:            https://github.com/pandoc/ast-migrator.git
 
 common common-options
   build-depends:       base       >= 4.9   && < 5
