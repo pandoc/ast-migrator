@@ -1,6 +1,6 @@
 {- |
 Copyright: (c) 2020 Albert Krewinkel
-SPDX-License-Identifier: MIT
+SPDX-License-Identifier: BSD-3-Clause
 Maintainer: Albert Krewinkel <albert@zeitkraut.de>
 
 Migrate documents from one pandoc AST schema to another

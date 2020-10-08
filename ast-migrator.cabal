@@ -5,7 +5,7 @@ synopsis:            Migrate documents from one pandoc AST schema to another
 description:         Migrate documents from one pandoc AST schema to another
 homepage:            https://github.com/tarleb/ast-migrator
 bug-reports:         https://github.com/tarleb/ast-migrator/issues
-license:             MIT
+license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <albert@zeitkraut.de>

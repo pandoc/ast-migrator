@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    Module      : Text.Pandoc.AST.V1_21.Builder
    Copyright   : © 2010-2019 John MacFarlane,
                  2020 Albert Krewinkel
-   License     : BSD3
+   SPDX-License-Identifier: BSD-3-Clause
 
    Maintainer  : John MacFarlane <jgm@berkeley.edu>
    Stability   : alpha

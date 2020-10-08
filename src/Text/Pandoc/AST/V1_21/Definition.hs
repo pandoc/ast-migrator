@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {- |
    Module      : Text.Pandoc.AST.V1_21.Definition
    Copyright   : Copyright (C) 2006-2019 John MacFarlane
-   License     : BSD3
+   SPDX-License-Identifier: BSD-3-Clause
 
    Maintainer  : John MacFarlane <jgm@berkeley.edu>
    Stability   : alpha

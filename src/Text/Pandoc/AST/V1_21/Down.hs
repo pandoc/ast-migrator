@@ -4,7 +4,7 @@
 {- |
 Module      : Text.Pandoc.AST.V1_21.Down
 Copyright   : © 2020 Albert Krewinkel
-License     : MIT
+SPDX-License-Identifier: BSD-3-Clause
 
 Maintainer  : Albert Krewinkel <albert@zeitkraut.de>
 Stability   : alpha
