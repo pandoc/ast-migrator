@@ -44,7 +44,7 @@ migrateJSON from to =
     (V1_20, V1_21) -> migrateJSONWith migrateUpToV1_21
     (V1_20, V1_22) -> migrateJSONWith (migrateUpToV1_22 . migrateUpToV1_21)
     (V1_21, V1_21) -> id
-    (V1_21, V1_22) -> migrateJSONWith (migrateUpToV1_22 . migrateUpToV1_21)
+    (V1_21, V1_22) -> migrateJSONWith migrateUpToV1_22
     (V1_22, V1_22) -> id
     (V1_22, V1_21) -> migrateJSONWith migrateDownFromV1_22
     (V1_22, V1_20) -> migrateJSONWith (migrateDownFromV1_21 . migrateDownFromV1_22)
